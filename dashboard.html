@@ -254,30 +254,30 @@
   </nav>
 
   <div class="container">
-    <!-- User Dashboard Metrics -->
+    <!-- Updated Zeroed-out User Dashboard Metrics -->
     <div class="stats-grid">
       <div class="stat-card plan">
         <div class="stat-title">Current Plan</div>
         <div class="stat-value">Basic Tier</div>
-        <div class="stat-subtext">2 / 5 Books Active</div>
+        <div class="stat-subtext">0 / 5 Books Active</div>
       </div>
 
       <div class="stat-card">
         <div class="stat-title">Books Checked Out</div>
-        <div class="stat-value">2 Books</div>
+        <div class="stat-value">0 Books</div>
         <div class="stat-subtext">Standard 14-day limit</div>
       </div>
 
       <div class="stat-card due">
         <div class="stat-title">Next Return Date</div>
-        <div class="stat-value">Nov 12</div>
+        <div class="stat-value">None</div>
         <div class="stat-subtext">0 Overdue Books</div>
       </div>
 
       <div class="stat-card goal">
         <div class="stat-title">2026 Reading Challenge</div>
-        <div class="stat-value">8 / 20</div>
-        <div class="stat-subtext">40% completed</div>
+        <div class="stat-value">0 / 20</div>
+        <div class="stat-subtext">0% completed</div>
       </div>
     </div>
 
@@ -319,12 +319,6 @@
     let allBooks = [];
     let selectedGenre = "All";
 
-    const defaultBooks = [
-      { id: "default1", title: "Hurricane Heroes in Texas", author: "Mary Pope Osborne", genre: "Fiction", isDefault: true },
-      { id: "default2", title: "Dune", author: "Frank Herbert", genre: "Sci-Fi", isDefault: true },
-      { id: "default3", title: "Sapiens", author: "Yuval Noah Harari", genre: "Non-Fiction", isDefault: true }
-    ];
-
     async function loadBooks() {
       try {
         const querySnapshot = await getDocs(collection(db, "books"));
@@ -336,13 +330,8 @@
             ...docSnap.data()
           });
         });
-
-        if (allBooks.length === 0) {
-          allBooks = defaultBooks;
-        }
       } catch (err) {
-        console.warn("Could not load from Firestore, using default list:", err);
-        allBooks = defaultBooks;
+        console.error("Could not load from Firestore:", err);
       }
       
       renderBooks();
@@ -364,7 +353,7 @@
       });
 
       if (filtered.length === 0) {
-        grid.innerHTML = `<div class="no-books">No books found for this selection.</div>`;
+        grid.innerHTML = `<div class="no-books">No books found in catalog.</div>`;
         return;
       }
 
@@ -376,21 +365,15 @@
           </div>
           <div class="card-footer">
             <span class="book-genre">${book.genre || 'General'}</span>
-            <button class="delete-btn" onclick="removeBook('${book.id}', ${book.isDefault || false})">🗑️ Remove</button>
+            <button class="delete-btn" onclick="removeBook('${book.id}')">🗑️ Remove</button>
           </div>
         </div>
       `).join('');
     }
 
-    // Function to delete book
-    window.removeBook = async function(bookId, isDefault) {
+    // Function to delete book permanently from Firestore database
+    window.removeBook = async function(bookId) {
       if (!confirm("Are you sure you want to remove this book from the catalog?")) return;
-
-      if (isDefault) {
-        allBooks = allBooks.filter(b => b.id !== bookId);
-        renderBooks();
-        return;
-      }
 
       try {
         await deleteDoc(doc(db, "books", bookId));
