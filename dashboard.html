@@ -183,10 +183,12 @@
       flex-direction: column;
       justify-content: space-between;
       transition: transform 0.2s;
+      cursor: pointer;
     }
 
     .book-card:hover {
-      transform: translateY(-3px);
+      transform: translateY(-4px);
+      box-shadow: 0 6px 16px rgba(0,0,0,0.1);
     }
 
     .book-title {
@@ -240,6 +242,101 @@
       padding: 40px;
       color: #888;
     }
+
+    /* Amazon-style Detail Modal */
+    .modal {
+      display: none;
+      position: fixed;
+      top: 0; left: 0; width: 100%; height: 100%;
+      background: rgba(0,0,0,0.5);
+      justify-content: center;
+      align-items: center;
+      z-index: 1000;
+    }
+
+    .modal-content {
+      background: white;
+      padding: 30px;
+      border-radius: 12px;
+      width: 100%;
+      max-width: 550px;
+      box-shadow: 0 5px 25px rgba(0,0,0,0.2);
+      position: relative;
+    }
+
+    .close-modal {
+      position: absolute;
+      top: 15px; right: 20px;
+      font-size: 22px;
+      cursor: pointer;
+      color: #aaa;
+    }
+
+    .close-modal:hover { color: #333; }
+
+    .modal-header {
+      border-bottom: 1px solid #eee;
+      padding-bottom: 15px;
+      margin-bottom: 20px;
+    }
+
+    .modal-title {
+      font-size: 22px;
+      color: #2c3e50;
+      margin: 0 0 5px 0;
+    }
+
+    .modal-author {
+      font-size: 15px;
+      color: #7f8c8d;
+      margin: 0;
+    }
+
+    .spec-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 15px;
+      background: #f8f9fa;
+      padding: 15px;
+      border-radius: 8px;
+      margin-bottom: 20px;
+    }
+
+    .spec-item {
+      display: flex;
+      flex-direction: column;
+    }
+
+    .spec-label {
+      font-size: 12px;
+      color: #95a5a6;
+      font-weight: bold;
+      text-transform: uppercase;
+    }
+
+    .spec-value {
+      font-size: 15px;
+      color: #2c3e50;
+      font-weight: 600;
+      margin-top: 2px;
+    }
+
+    .checkout-btn {
+      width: 100%;
+      background-color: #f39c12;
+      color: white;
+      border: none;
+      padding: 12px;
+      border-radius: 6px;
+      font-size: 16px;
+      font-weight: bold;
+      cursor: pointer;
+      transition: background-color 0.2s;
+    }
+
+    .checkout-btn:hover {
+      background-color: #d68910;
+    }
   </style>
 </head>
 <body>
@@ -254,7 +351,7 @@
   </nav>
 
   <div class="container">
-    <!-- Updated Zeroed-out User Dashboard Metrics -->
+    <!-- User Dashboard Metrics -->
     <div class="stats-grid">
       <div class="stat-card plan">
         <div class="stat-title">Current Plan</div>
@@ -296,6 +393,39 @@
     <h2 class="section-title">Catalog Books</h2>
     <div id="booksGrid" class="books-grid">
       <div class="no-books">Loading catalog...</div>
+    </div>
+  </div>
+
+  <!-- Book Detail Modal -->
+  <div id="bookDetailModal" class="modal">
+    <div class="modal-content">
+      <span class="close-modal" onclick="closeDetailModal()">&times;</span>
+      
+      <div class="modal-header">
+        <h2 id="modalTitle" class="modal-title">Book Title</h2>
+        <p id="modalAuthor" class="modal-author">by Author Name</p>
+      </div>
+
+      <div class="spec-grid">
+        <div class="spec-item">
+          <span class="spec-label">Genre</span>
+          <span id="modalGenre" class="spec-value">Fiction</span>
+        </div>
+        <div class="spec-item">
+          <span class="spec-label">Page Count</span>
+          <span id="modalPages" class="spec-value">0 pages</span>
+        </div>
+        <div class="spec-item">
+          <span class="spec-label">Reading Level</span>
+          <span id="modalLevel" class="spec-value">Middle School</span>
+        </div>
+        <div class="spec-item">
+          <span class="spec-label">In Stock</span>
+          <span id="modalStock" class="spec-value">0 copies</span>
+        </div>
+      </div>
+
+      <button class="checkout-btn" onclick="alert('Book checked out successfully!')">📖 Borrow Book</button>
     </div>
   </div>
 
@@ -358,20 +488,38 @@
       }
 
       grid.innerHTML = filtered.map(book => `
-        <div class="book-card">
+        <div class="book-card" onclick="window.openDetailModal('${book.id}')">
           <div>
             <h3 class="book-title">${book.title || 'Untitled'}</h3>
             <p class="book-author">by ${book.author || 'Unknown Author'}</p>
           </div>
           <div class="card-footer">
             <span class="book-genre">${book.genre || 'General'}</span>
-            <button class="delete-btn" onclick="removeBook('${book.id}')">🗑️ Remove</button>
+            <button class="delete-btn" onclick="event.stopPropagation(); window.removeBook('${book.id}')">🗑️ Remove</button>
           </div>
         </div>
       `).join('');
     }
 
-    // Function to delete book permanently from Firestore database
+    // Explicitly attach to window so inline onclick handlers find them immediately
+    window.openDetailModal = function(bookId) {
+      const book = allBooks.find(b => b.id === bookId);
+      if (!book) return;
+
+      document.getElementById('modalTitle').innerText = book.title || 'Untitled';
+      document.getElementById('modalAuthor').innerText = `by ${book.author || 'Unknown Author'}`;
+      document.getElementById('modalGenre').innerText = book.genre || 'General';
+      document.getElementById('modalPages').innerText = `${book.pages !== undefined ? book.pages : 'N/A'} pages`;
+      document.getElementById('modalLevel').innerText = book.readingLevel || 'Middle School';
+      document.getElementById('modalStock').innerText = `${book.stock !== undefined ? book.stock : 5} copies`;
+
+      document.getElementById('bookDetailModal').style.display = 'flex';
+    };
+
+    window.closeDetailModal = function() {
+      document.getElementById('bookDetailModal').style.display = 'none';
+    };
+
     window.removeBook = async function(bookId) {
       if (!confirm("Are you sure you want to remove this book from the catalog?")) return;
 
@@ -385,7 +533,6 @@
       }
     };
 
-    // Attach Click Handlers to Filter Buttons
     document.querySelectorAll('.filter-btn').forEach(btn => {
       btn.addEventListener('click', (e) => {
         document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
@@ -396,10 +543,8 @@
       });
     });
 
-    // Attach Search Input Event
     document.getElementById('searchInput').addEventListener('input', renderBooks);
 
-    // Initial Load
     loadBooks();
   </script>
 </body>
