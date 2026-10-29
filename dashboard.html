@@ -532,8 +532,6 @@
         if (userSnap.exists()) {
           const userData = userSnap.data();
           userMembership = userData.membership || 'Basic';
-          
-          // CRITICAL FIX: Update localStorage instantly so it stays in sync with Firestore!
           currentUser.membership = userMembership;
           localStorage.setItem('currentUser', JSON.stringify(currentUser));
         } else {
@@ -544,13 +542,18 @@
         userMembership = currentUser.membership || 'Basic';
       }
 
-      // Configure limits based on active tier
+      const limitSubtext = document.getElementById('limitSubtext');
+
+      // Dynamic checkout duration and max limit settings
       if (userMembership === 'Standard') {
         maxLimit = 10;
+        if (limitSubtext) limitSubtext.innerText = "Standard 14-day limit";
       } else if (userMembership === 'Premium') {
         maxLimit = 9999; // Unlimited
+        if (limitSubtext) limitSubtext.innerText = "Extended 21-day limit";
       } else {
         maxLimit = 5; // Basic
+        if (limitSubtext) limitSubtext.innerText = "Standard 14-day limit";
       }
 
       document.getElementById('planTitleValue').innerText = `${userMembership} Tier`;
@@ -587,8 +590,7 @@
 
         const activeCount = checkouts.length;
         countValue.innerText = `${activeCount} Book${activeCount === 1 ? '' : 's'}`;
-        
-        // Dynamically update subtitle based on tier
+
         if (userMembership === 'Premium') {
           planSubtext.innerText = `${activeCount} / Unlimited Books Active`;
         } else {
@@ -608,18 +610,38 @@
         });
         nextReturnDateValue.innerText = earliestDate.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
 
-        listContainer.innerHTML = checkouts.map(item => {
-          const dueStr = new Date(item.dueDate).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
-          return `
+        // Group checkouts by bookId
+        const groupedMap = new Map();
+        checkouts.forEach(item => {
+          if (!groupedMap.has(item.bookId)) {
+            groupedMap.set(item.bookId, []);
+          }
+          groupedMap.get(item.bookId).push(item);
+        });
+
+        let html = '';
+        groupedMap.forEach((items, bookId) => {
+          const sample = items[0];
+          const count = items.length;
+          const dueStr = new Date(sample.dueDate).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+          const checkoutIdToReturn = sample.id; // Returns one copy at a time
+
+          html += `
             <div class="borrowed-item">
               <div class="borrowed-info">
-                <h4>${item.bookTitle} <span style="font-size: 12px; color: #7f8c8d; font-weight: normal;">by ${item.author}</span></h4>
+                <h4>
+                  ${sample.bookTitle} 
+                  <span style="font-size: 12px; color: #7f8c8d; font-weight: normal;">by ${sample.author}</span>
+                  ${count > 1 ? `<span style="background-color: #3498db; color: white; border-radius: 12px; padding: 2px 8px; font-size: 12px; font-weight: bold; margin-left: 8px;">x${count}</span>` : ''}
+                </h4>
                 <p>📅 Due: <strong>${dueStr}</strong></p>
               </div>
-              <button class="return-btn" onclick="returnBook('${item.id}', '${item.bookId}')">Return Book</button>
+              <button class="return-btn" onclick="returnBook('${checkoutIdToReturn}', '${bookId}')">Return 1 Copy</button>
             </div>
           `;
-        }).join('');
+        });
+
+        listContainer.innerHTML = html;
 
       } catch (err) {
         console.error("Error loading checkouts:", err);
@@ -684,7 +706,6 @@
     window.borrowCurrentBook = async function() {
       if (!currentActiveBook || !currentUser) return;
 
-      // Enforce limit check (bypass entirely if user is on Premium Tier)
       try {
         const querySnapshot = await getDocs(collection(db, "checkouts"));
         let userActiveCount = 0;
@@ -739,7 +760,7 @@
     };
 
     window.returnBook = async function(checkoutId, bookId) {
-      if (!confirm("Are you sure you want to return this book?")) return;
+      if (!confirm("Are you sure you want to return 1 copy of this book?")) return;
 
       try {
         await deleteDoc(doc(db, "checkouts", checkoutId));
