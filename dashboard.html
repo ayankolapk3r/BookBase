@@ -425,13 +425,13 @@
         </div>
       </div>
 
-      <button class="checkout-btn" onclick="alert('Book checked out successfully!')">📖 Borrow Book</button>
+      <button class="checkout-btn" onclick="borrowCurrentBook()">📖 Borrow Book</button>
     </div>
   </div>
 
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-    import { getFirestore, collection, getDocs, doc, deleteDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+    import { getFirestore, collection, getDocs, doc, deleteDoc, updateDoc, addDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
     const firebaseConfig = {
       apiKey: "AIzaSyDavvy7VnUeTKArqXXCbhBDMBvmDR9Y4po",
@@ -448,6 +448,7 @@
 
     let allBooks = [];
     let selectedGenre = "All";
+    let currentActiveBook = null;
 
     async function loadBooks() {
       try {
@@ -501,10 +502,12 @@
       `).join('');
     }
 
-    // Explicitly attach to window so inline onclick handlers find them immediately
+    // Modal Controls & Selection Tracking
     window.openDetailModal = function(bookId) {
       const book = allBooks.find(b => b.id === bookId);
       if (!book) return;
+
+      currentActiveBook = book;
 
       document.getElementById('modalTitle').innerText = book.title || 'Untitled';
       document.getElementById('modalAuthor').innerText = `by ${book.author || 'Unknown Author'}`;
@@ -518,6 +521,46 @@
 
     window.closeDetailModal = function() {
       document.getElementById('bookDetailModal').style.display = 'none';
+    };
+
+    // Borrow / Checkout Logic
+    window.borrowCurrentBook = async function() {
+      if (!currentActiveBook) return;
+
+      const currentStock = currentActiveBook.stock !== undefined ? currentActiveBook.stock : 5;
+
+      if (currentStock <= 0) {
+        alert("Sorry, this book is currently out of stock!");
+        return;
+      }
+
+      try {
+        const checkoutDate = new Date();
+        const dueDate = new Date();
+        dueDate.setDate(checkoutDate.getDate() + 14);
+
+        // Save checkout record to Firestore
+        await addDoc(collection(db, "checkouts"), {
+          bookId: currentActiveBook.id,
+          bookTitle: currentActiveBook.title,
+          author: currentActiveBook.author,
+          checkoutDate: checkoutDate.toISOString(),
+          dueDate: dueDate.toISOString(),
+          status: "Active"
+        });
+
+        // Decrement book stock in Firestore
+        const newStock = currentStock - 1;
+        const bookRef = doc(db, "books", currentActiveBook.id);
+        await updateDoc(bookRef, { stock: newStock });
+
+        alert(`Successfully checked out "${currentActiveBook.title}"! Due in 14 days.`);
+        closeDetailModal();
+        loadBooks(); // Refresh book catalog to show updated stock
+      } catch (err) {
+        console.error("Error checking out book:", err);
+        alert("Failed to process checkout. Please try again.");
+      }
     };
 
     window.removeBook = async function(bookId) {
