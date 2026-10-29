@@ -552,7 +552,6 @@
           return;
         }
 
-        // Find earliest due date
         let earliestDate = new Date(checkouts[0].dueDate);
         checkouts.forEach(c => {
           const d = new Date(c.dueDate);
@@ -636,6 +635,17 @@
     window.borrowCurrentBook = async function() {
       if (!currentActiveBook) return;
 
+      // 1. Enforce 5-book limit for Basic Tier
+      try {
+        const checkoutsSnapshot = await getDocs(collection(db, "checkouts"));
+        if (checkoutsSnapshot.size >= 5) {
+          alert("You've reached your Basic Tier limit of 5 books! Return a book or upgrade your membership to borrow more.");
+          return;
+        }
+      } catch (err) {
+        console.error("Error checking limits:", err);
+      }
+
       const currentStock = currentActiveBook.stock !== undefined ? currentActiveBook.stock : 5;
 
       if (currentStock <= 0) {
@@ -663,7 +673,7 @@
 
         alert(`Successfully checked out "${currentActiveBook.title}"! Due in 14 days.`);
         closeDetailModal();
-        loadData(); // Refresh both catalog stock and user checkouts
+        loadData();
       } catch (err) {
         console.error("Error checking out book:", err);
         alert("Failed to process checkout. Please try again.");
@@ -674,10 +684,8 @@
       if (!confirm("Are you sure you want to return this book?")) return;
 
       try {
-        // 1. Delete checkout document
         await deleteDoc(doc(db, "checkouts", checkoutId));
 
-        // 2. Find book and return +1 to stock
         const targetBook = allBooks.find(b => b.id === bookId);
         if (targetBook) {
           const currentStock = targetBook.stock !== undefined ? targetBook.stock : 0;
@@ -686,7 +694,7 @@
         }
 
         alert("Book returned successfully!");
-        loadData(); // Refresh UI
+        loadData();
       } catch (err) {
         console.error("Error returning book:", err);
         alert("Failed to return book. Please try again.");
