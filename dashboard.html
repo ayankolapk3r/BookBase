@@ -511,6 +511,12 @@
     let selectedGenre = "All";
     let currentActiveBook = null;
 
+    // Secure the dashboard: redirect to login if no user session exists in localStorage
+    const currentUser = JSON.parse(localStorage.getItem('currentUser'));
+    if (!currentUser) {
+      window.location.href = 'index.html';
+    }
+
     async function loadData() {
       await loadBooks();
       await loadCheckouts();
@@ -539,7 +545,11 @@
         const querySnapshot = await getDocs(collection(db, "checkouts"));
         let checkouts = [];
         querySnapshot.forEach((docSnap) => {
-          checkouts.push({ id: docSnap.id, ...docSnap.data() });
+          const data = docSnap.data();
+          // Filter checkouts to ONLY show items belonging to the current logged-in user email
+          if (currentUser && data.userEmail === currentUser.email) {
+            checkouts.push({ id: docSnap.id, ...data });
+          }
         });
 
         const activeCount = checkouts.length;
@@ -633,12 +643,19 @@
     };
 
     window.borrowCurrentBook = async function() {
-      if (!currentActiveBook) return;
+      if (!currentActiveBook || !currentUser) return;
 
-      // 1. Enforce 5-book limit for Basic Tier
+      // Enforce 5-book active limit specifically for THIS user
       try {
-        const checkoutsSnapshot = await getDocs(collection(db, "checkouts"));
-        if (checkoutsSnapshot.size >= 5) {
+        const querySnapshot = await getDocs(collection(db, "checkouts"));
+        let userActiveCount = 0;
+        querySnapshot.forEach(docSnap => {
+          if (docSnap.data().userEmail === currentUser.email) {
+            userActiveCount++;
+          }
+        });
+
+        if (userActiveCount >= 5) {
           alert("You've reached your Basic Tier limit of 5 books! Return a book or upgrade your membership to borrow more.");
           return;
         }
@@ -658,10 +675,12 @@
         const dueDate = new Date();
         dueDate.setDate(checkoutDate.getDate() + 14);
 
+        // Save checkout tied directly to the user's email address
         await addDoc(collection(db, "checkouts"), {
           bookId: currentActiveBook.id,
           bookTitle: currentActiveBook.title,
           author: currentActiveBook.author,
+          userEmail: currentUser.email,
           checkoutDate: checkoutDate.toISOString(),
           dueDate: dueDate.toISOString(),
           status: "Active"
