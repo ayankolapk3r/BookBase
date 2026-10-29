@@ -167,6 +167,59 @@
       color: #333;
     }
 
+    /* Borrowed Books Section */
+    .borrowed-section {
+      background: white;
+      padding: 20px;
+      border-radius: 10px;
+      box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+      margin-bottom: 30px;
+    }
+
+    .borrowed-list {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .borrowed-item {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 12px 15px;
+      background: #f8f9fa;
+      border-radius: 8px;
+      border-left: 4px solid #f39c12;
+    }
+
+    .borrowed-info h4 {
+      margin: 0 0 4px 0;
+      color: #2c3e50;
+      font-size: 16px;
+    }
+
+    .borrowed-info p {
+      margin: 0;
+      color: #7f8c8d;
+      font-size: 13px;
+    }
+
+    .return-btn {
+      background-color: #e74c3c;
+      color: white;
+      border: none;
+      padding: 8px 14px;
+      border-radius: 6px;
+      cursor: pointer;
+      font-weight: 600;
+      font-size: 13px;
+      transition: background-color 0.2s;
+    }
+
+    .return-btn:hover {
+      background-color: #c0392b;
+    }
+
     /* Books Grid */
     .books-grid {
       display: grid;
@@ -356,18 +409,18 @@
       <div class="stat-card plan">
         <div class="stat-title">Current Plan</div>
         <div class="stat-value">Basic Tier</div>
-        <div class="stat-subtext">0 / 5 Books Active</div>
+        <div class="stat-subtext" id="planSubtext">0 / 5 Books Active</div>
       </div>
 
       <div class="stat-card">
         <div class="stat-title">Books Checked Out</div>
-        <div class="stat-value">0 Books</div>
+        <div class="stat-value" id="checkoutCountValue">0 Books</div>
         <div class="stat-subtext">Standard 14-day limit</div>
       </div>
 
       <div class="stat-card due">
         <div class="stat-title">Next Return Date</div>
-        <div class="stat-value">None</div>
+        <div class="stat-value" id="nextReturnDateValue">None</div>
         <div class="stat-subtext">0 Overdue Books</div>
       </div>
 
@@ -375,6 +428,14 @@
         <div class="stat-title">2026 Reading Challenge</div>
         <div class="stat-value">0 / 20</div>
         <div class="stat-subtext">0% completed</div>
+      </div>
+    </div>
+
+    <!-- Active Borrowed Books Section -->
+    <div class="borrowed-section">
+      <h2 class="section-title" style="margin-bottom: 12px;">My Borrowed Books</h2>
+      <div id="borrowedBooksList" class="borrowed-list">
+        <div style="color: #888; font-size: 14px;">Loading your active checkouts...</div>
       </div>
     </div>
 
@@ -450,22 +511,72 @@
     let selectedGenre = "All";
     let currentActiveBook = null;
 
+    async function loadData() {
+      await loadBooks();
+      await loadCheckouts();
+    }
+
     async function loadBooks() {
       try {
         const querySnapshot = await getDocs(collection(db, "books"));
         allBooks = [];
-        
         querySnapshot.forEach((docSnap) => {
-          allBooks.push({
-            id: docSnap.id,
-            ...docSnap.data()
-          });
+          allBooks.push({ id: docSnap.id, ...docSnap.data() });
         });
       } catch (err) {
-        console.error("Could not load from Firestore:", err);
+        console.error("Could not load books from Firestore:", err);
       }
-      
       renderBooks();
+    }
+
+    async function loadCheckouts() {
+      const listContainer = document.getElementById('borrowedBooksList');
+      const countValue = document.getElementById('checkoutCountValue');
+      const planSubtext = document.getElementById('planSubtext');
+      const nextReturnDateValue = document.getElementById('nextReturnDateValue');
+
+      try {
+        const querySnapshot = await getDocs(collection(db, "checkouts"));
+        let checkouts = [];
+        querySnapshot.forEach((docSnap) => {
+          checkouts.push({ id: docSnap.id, ...docSnap.data() });
+        });
+
+        const activeCount = checkouts.length;
+        countValue.innerText = `${activeCount} Book${activeCount === 1 ? '' : 's'}`;
+        planSubtext.innerText = `${activeCount} / 5 Books Active`;
+
+        if (activeCount === 0) {
+          listContainer.innerHTML = `<div style="color: #888; font-size: 14px;">No books currently checked out. Click a book in the catalog to borrow!</div>`;
+          nextReturnDateValue.innerText = "None";
+          return;
+        }
+
+        // Find earliest due date
+        let earliestDate = new Date(checkouts[0].dueDate);
+        checkouts.forEach(c => {
+          const d = new Date(c.dueDate);
+          if (d < earliestDate) earliestDate = d;
+        });
+        nextReturnDateValue.innerText = earliestDate.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+
+        listContainer.innerHTML = checkouts.map(item => {
+          const dueStr = new Date(item.dueDate).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+          return `
+            <div class="borrowed-item">
+              <div class="borrowed-info">
+                <h4>${item.bookTitle} <span style="font-size: 12px; color: #7f8c8d; font-weight: normal;">by ${item.author}</span></h4>
+                <p>📅 Due: <strong>${dueStr}</strong></p>
+              </div>
+              <button class="return-btn" onclick="returnBook('${item.id}', '${item.bookId}')">Return Book</button>
+            </div>
+          `;
+        }).join('');
+
+      } catch (err) {
+        console.error("Error loading checkouts:", err);
+        listContainer.innerHTML = `<div style="color: #e74c3c; font-size: 14px;">Failed to load active checkouts.</div>`;
+      }
     }
 
     function renderBooks() {
@@ -502,7 +613,6 @@
       `).join('');
     }
 
-    // Modal Controls & Selection Tracking
     window.openDetailModal = function(bookId) {
       const book = allBooks.find(b => b.id === bookId);
       if (!book) return;
@@ -523,7 +633,6 @@
       document.getElementById('bookDetailModal').style.display = 'none';
     };
 
-    // Borrow / Checkout Logic
     window.borrowCurrentBook = async function() {
       if (!currentActiveBook) return;
 
@@ -539,7 +648,6 @@
         const dueDate = new Date();
         dueDate.setDate(checkoutDate.getDate() + 14);
 
-        // Save checkout record to Firestore
         await addDoc(collection(db, "checkouts"), {
           bookId: currentActiveBook.id,
           bookTitle: currentActiveBook.title,
@@ -549,17 +657,39 @@
           status: "Active"
         });
 
-        // Decrement book stock in Firestore
         const newStock = currentStock - 1;
         const bookRef = doc(db, "books", currentActiveBook.id);
         await updateDoc(bookRef, { stock: newStock });
 
         alert(`Successfully checked out "${currentActiveBook.title}"! Due in 14 days.`);
         closeDetailModal();
-        loadBooks(); // Refresh book catalog to show updated stock
+        loadData(); // Refresh both catalog stock and user checkouts
       } catch (err) {
         console.error("Error checking out book:", err);
         alert("Failed to process checkout. Please try again.");
+      }
+    };
+
+    window.returnBook = async function(checkoutId, bookId) {
+      if (!confirm("Are you sure you want to return this book?")) return;
+
+      try {
+        // 1. Delete checkout document
+        await deleteDoc(doc(db, "checkouts", checkoutId));
+
+        // 2. Find book and return +1 to stock
+        const targetBook = allBooks.find(b => b.id === bookId);
+        if (targetBook) {
+          const currentStock = targetBook.stock !== undefined ? targetBook.stock : 0;
+          const bookRef = doc(db, "books", bookId);
+          await updateDoc(bookRef, { stock: currentStock + 1 });
+        }
+
+        alert("Book returned successfully!");
+        loadData(); // Refresh UI
+      } catch (err) {
+        console.error("Error returning book:", err);
+        alert("Failed to return book. Please try again.");
       }
     };
 
@@ -588,7 +718,7 @@
 
     document.getElementById('searchInput').addEventListener('input', renderBooks);
 
-    loadBooks();
+    loadData();
   </script>
 </body>
 </html>
