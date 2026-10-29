@@ -224,6 +224,11 @@
           <td>ayankolapkar@gmail.com</td>
           <td><span class="tier-badge">Basic</span></td>
         </tr>
+        <tr>
+          <td>Milind Kolapkar</td>
+          <td>milindkolapkar@gmail.com</td>
+          <td><span class="tier-badge">Basic</span></td>
+        </tr>
       </tbody>
     </table>
   </div>
@@ -258,7 +263,7 @@
 
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-    import { getFirestore, collection, addDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+    import { getFirestore, collection, getDocs, addDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
     const firebaseConfig = {
       apiKey: "AIzaSyDavvy7VnUeTKArqXXCbhBDMBvmDR9Y4po",
@@ -272,6 +277,31 @@
 
     const app = initializeApp(firebaseConfig);
     const db = getFirestore(app);
+
+    // Fetch dynamic users from Firestore
+    async function loadUsers() {
+      try {
+        const querySnapshot = await getDocs(collection(db, "users"));
+        if (!querySnapshot.empty) {
+          const tbody = document.getElementById("usersTableBody");
+          tbody.innerHTML = "";
+          querySnapshot.forEach((doc) => {
+            const data = doc.data();
+            const row = document.createElement("tr");
+            row.innerHTML = `
+              <td>${data.name || 'User'}</td>
+              <td>${data.email || 'N/A'}</td>
+              <td><span class="tier-badge">${data.tier || 'Basic'}</span></td>
+            `;
+            tbody.appendChild(row);
+          });
+        }
+      } catch (err) {
+        console.log("Using static default rows or fetch failed:", err);
+      }
+    }
+
+    loadUsers();
 
     // Modal UI Controls
     const modal = document.getElementById('addBookModal');
