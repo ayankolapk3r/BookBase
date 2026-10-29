@@ -3,206 +3,168 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>BookBase - Admin Oversight Portal</title>
+  <title>BookBase - Admin Portal</title>
   <style>
     * {
       box-sizing: border-box;
       font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
     }
-
     body {
       background-color: #f4f7f6;
       margin: 0;
-      padding: 20px;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
+      padding: 0;
     }
-
-    .admin-container {
+    .navbar {
       background-color: #ffffff;
-      padding: 25px;
-      border-radius: 12px;
-      box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
-      width: 100%;
-      max-width: 1100px;
-      margin-bottom: 25px;
-    }
-
-    .header-bar {
+      padding: 15px 30px;
       display: flex;
       justify-content: space-between;
       align-items: center;
-      border-bottom: 2px solid #f0f0f0;
-      padding-bottom: 15px;
-      margin-bottom: 20px;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.05);
     }
-
-    h1 {
-      color: #000;
-      font-size: 24px;
-      margin: 0;
+    .brand {
+      font-size: 22px;
+      font-weight: bold;
+      color: #3498db;
     }
-
-    .nav-actions {
+    .nav-links {
       display: flex;
-      gap: 10px;
+      gap: 12px;
+      align-items: center;
     }
-
-    .home-btn {
+    .nav-btn {
       background-color: #2ecc71;
       color: white;
       border: none;
       padding: 8px 16px;
       border-radius: 6px;
       cursor: pointer;
-      font-weight: bold;
+      font-weight: 600;
       text-decoration: none;
       font-size: 14px;
-      display: inline-flex;
-      align-items: center;
     }
-
-    .home-btn:hover {
+    .nav-btn:hover {
       background-color: #27ae60;
     }
-
     .logout-btn {
       background-color: #e74c3c;
-      color: white;
-      border: none;
-      padding: 8px 16px;
-      border-radius: 6px;
-      cursor: pointer;
-      font-weight: bold;
-      font-size: 14px;
     }
-
-    .action-row {
+    .logout-btn:hover {
+      background-color: #c0392b;
+    }
+    .container {
+      max-width: 1100px;
+      margin: 30px auto;
+      padding: 0 20px;
+    }
+    .header-section {
       display: flex;
       justify-content: space-between;
       align-items: center;
-      margin-bottom: 15px;
+      margin-bottom: 20px;
     }
-
-    .admin-btn {
+    .section-title {
+      font-size: 20px;
+      color: #333;
+      margin: 0;
+    }
+    .add-book-btn {
       background-color: #3498db;
       color: white;
       border: none;
       padding: 10px 18px;
-      font-size: 15px;
       border-radius: 6px;
       cursor: pointer;
       font-weight: 600;
-      transition: background-color 0.2s;
+      font-size: 14px;
     }
-
-    .admin-btn:hover {
+    .add-book-btn:hover {
       background-color: #2980b9;
     }
-
-    /* Table Styles */
     table {
       width: 100%;
+      background: white;
+      border-radius: 10px;
       border-collapse: collapse;
-      margin-top: 10px;
+      overflow: hidden;
+      box-shadow: 0 4px 15px rgba(0,0,0,0.05);
     }
-
+    th, td {
+      padding: 15px 20px;
+      text-align: left;
+    }
     th {
       background-color: #3498db;
       color: white;
-      text-align: left;
-      padding: 12px;
-      font-size: 14px;
+      font-weight: 600;
     }
-
-    td {
-      padding: 12px;
-      border-bottom: 1px solid #eee;
-      font-size: 14px;
-      color: #333;
+    tr:not(:last-child) td {
+      border-bottom: 1px solid #edf2f7;
     }
-
-    .tier-badge {
+    .badge {
       background-color: #7f8c8d;
       color: white;
-      padding: 4px 8px;
+      padding: 4px 10px;
       border-radius: 4px;
       font-size: 12px;
+      font-weight: 600;
     }
-
-    /* Modal Styles */
+    /* Modal styles */
     .modal {
-      display: none; 
-      position: fixed; 
-      z-index: 100; 
-      left: 0;
-      top: 0;
-      width: 100%; 
-      height: 100%; 
-      background-color: rgba(0, 0, 0, 0.5); 
+      display: none;
+      position: fixed;
+      top: 0; left: 0; width: 100%; height: 100%;
+      background: rgba(0,0,0,0.5);
       justify-content: center;
       align-items: center;
+      z-index: 1000;
     }
-
     .modal-content {
-      background-color: #fff;
-      padding: 25px;
+      background: white;
+      padding: 30px;
       border-radius: 10px;
-      width: 90%;
-      max-width: 480px;
+      width: 100%;
+      max-width: 500px;
+      box-shadow: 0 5px 20px rgba(0,0,0,0.15);
       position: relative;
-      box-shadow: 0 5px 20px rgba(0,0,0,0.2);
     }
-
-    .close-btn {
+    .close-modal {
       position: absolute;
-      right: 15px;
-      top: 10px;
-      font-size: 24px;
+      top: 15px; right: 20px;
+      font-size: 20px;
       cursor: pointer;
-      color: #888;
+      color: #aaa;
     }
-
-    .close-btn:hover {
-      color: #000;
-    }
-
+    .close-modal:hover { color: #333; }
     .form-group {
       margin-bottom: 15px;
-      display: flex;
-      flex-direction: column;
     }
-
     .form-group label {
+      display: block;
       margin-bottom: 5px;
       font-weight: 600;
       color: #333;
+      font-size: 14px;
     }
-
-    .form-group input {
+    .form-control {
+      width: 100%;
       padding: 10px;
       border: 1px solid #ccc;
       border-radius: 6px;
       font-size: 14px;
     }
-
-    .detect-btn {
-      margin-top: 8px;
-      background-color: #2ecc71;
+    .auto-btn {
+      background-color: #27ae60;
       color: white;
       border: none;
       padding: 8px 12px;
       border-radius: 6px;
       cursor: pointer;
       font-size: 13px;
-      align-self: flex-start;
+      font-weight: 600;
+      margin-top: 5px;
     }
-
-    .detect-btn:hover {
-      background-color: #27ae60;
-    }
-
+    .auto-btn:hover { background-color: #219653; }
     .submit-btn {
       width: 100%;
       background-color: #3498db;
@@ -210,31 +172,28 @@
       border: none;
       padding: 12px;
       border-radius: 6px;
-      font-size: 16px;
+      font-size: 15px;
+      font-weight: 600;
       cursor: pointer;
       margin-top: 10px;
-      font-weight: bold;
     }
-
-    .submit-btn:hover {
-      background-color: #2980b9;
-    }
+    .submit-btn:hover { background-color: #2980b9; }
   </style>
 </head>
 <body>
 
-  <div class="admin-container">
-    <div class="header-bar">
-      <h1>Admin Oversight Portal</h1>
-      <div class="nav-actions">
-        <button class="home-btn" onclick="window.location.href='dashboard.html'">🏠 Home</button>
-        <button class="logout-btn" onclick="window.location.href='index.html'">Logout</button>
-      </div>
+  <nav class="navbar">
+    <div class="brand">Admin Oversight Portal</div>
+    <div class="nav-links">
+      <a href="dashboard.html" class="nav-btn">🏠 Home</a>
+      <button class="nav-btn logout-btn" onclick="window.location.href='index.html'">Logout</button>
     </div>
+  </nav>
 
-    <div class="action-row">
-      <h2 style="font-size: 18px; margin: 0;">Registered Users (Live Cloud Database)</h2>
-      <button id="openAddModalBtn" class="admin-btn">+ Add Book</button>
+  <div class="container">
+    <div class="header-section">
+      <h2 class="section-title">Registered Users (Live Cloud Database)</h2>
+      <button class="add-book-btn" onclick="openModal()">+ Add Book</button>
     </div>
 
     <table>
@@ -247,14 +206,7 @@
       </thead>
       <tbody id="usersTableBody">
         <tr>
-          <td>Ayan Kolapkar</td>
-          <td>ayankolapkar@gmail.com</td>
-          <td><span class="tier-badge">Basic</span></td>
-        </tr>
-        <tr>
-          <td>Milind Kolapkar</td>
-          <td>milindkolapkar@gmail.com</td>
-          <td><span class="tier-badge">Basic</span></td>
+          <td colspan="3" style="text-align: center; color: #888;">Loading users from Firestore...</td>
         </tr>
       </tbody>
     </table>
@@ -263,34 +215,33 @@
   <!-- Add Book Modal -->
   <div id="addBookModal" class="modal">
     <div class="modal-content">
-      <span class="close-btn" id="closeModalBtn">&times;</span>
-      <h2>Add New Book</h2>
+      <span class="close-modal" onclick="closeModal()">&times;</span>
+      <h3 style="margin-top: 0; color: #333;">Add New Book</h3>
       
-      <form id="addBookForm">
-        <div class="form-group">
-          <label for="bookTitle">Book Title</label>
-          <input type="text" id="bookTitle" placeholder="e.g., Hurricane Heroes In Texas" required>
-          <button type="button" id="autoFetchBtn" class="detect-btn">✨ Auto-Detect Details</button>
-        </div>
+      <div class="form-group">
+        <label for="bookTitle">Book Title</label>
+        <input type="text" id="bookTitle" class="form-control" placeholder="Enter book title...">
+      </div>
 
-        <div class="form-group">
-          <label for="bookAuthor">Author</label>
-          <input type="text" id="bookAuthor" placeholder="Author name">
-        </div>
+      <button type="button" class="auto-btn" onclick="autoDetectBookDetails()">✨ Auto-Detect Details</button>
 
-        <div class="form-group">
-          <label for="bookGenre">Genre / Category</label>
-          <input type="text" id="bookGenre" placeholder="Auto-detected genre">
-        </div>
+      <div class="form-group" style="margin-top: 15px;">
+        <label for="bookAuthor">Author</label>
+        <input type="text" id="bookAuthor" class="form-control" placeholder="Author name">
+      </div>
 
-        <button type="submit" class="submit-btn">Save to Catalog</button>
-      </form>
+      <div class="form-group">
+        <label for="bookGenre">Genre / Category</label>
+        <input type="text" id="bookGenre" class="form-control" placeholder="Auto-detected genre">
+      </div>
+
+      <button type="button" class="submit-btn" onclick="saveBookToCatalog()">Save to Catalog</button>
     </div>
   </div>
 
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-    import { getFirestore, collection, addDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+    import { getFirestore, collection, getDocs, addDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
     const firebaseConfig = {
       apiKey: "AIzaSyDavvy7VnUeTKArqXXCbhBDMBvmDR9Y4po",
@@ -305,84 +256,120 @@
     const app = initializeApp(firebaseConfig);
     const db = getFirestore(app);
 
-    // Modal UI Controls
-    const modal = document.getElementById('addBookModal');
-    const openBtn = document.getElementById('openAddModalBtn');
-    const closeBtn = document.getElementById('closeModalBtn');
+    // Modal Control Functions
+    window.openModal = function() {
+      document.getElementById('addBookModal').style.display = 'flex';
+    }
 
-    openBtn.addEventListener('click', () => modal.style.display = 'flex');
-    closeBtn.addEventListener('click', () => modal.style.display = 'none');
-    window.addEventListener('click', (e) => {
-      if (e.target === modal) modal.style.display = 'none';
-    });
+    window.closeModal = function() {
+      document.getElementById('addBookModal').style.display = 'none';
+    }
 
-    // Auto-fetch book details via Google Books API
-    document.getElementById('autoFetchBtn').addEventListener('click', async () => {
-      const rawTitle = document.getElementById('bookTitle').value.trim();
-      if (!rawTitle) {
+    // Load Users from Firestore
+    async function loadUsers() {
+      const tableBody = document.getElementById('usersTableBody');
+      try {
+        const querySnapshot = await getDocs(collection(db, "users"));
+        let usersHTML = "";
+
+        querySnapshot.forEach((doc) => {
+          const user = doc.data();
+          usersHTML += `
+            <tr>
+              <td>${user.name || 'Unnamed User'}</td>
+              <td>${user.email || 'No Email'}</td>
+              <td><span class="badge">${user.membershipTier || 'Basic'}</span></td>
+            </tr>
+          `;
+        });
+
+        if (usersHTML === "") {
+          usersHTML = `<tr><td colspan="3" style="text-align: center; color: #888;">No registered users found.</td></tr>`;
+        }
+
+        tableBody.innerHTML = usersHTML;
+      } catch (err) {
+        console.error("Error loading users:", err);
+        tableBody.innerHTML = `<tr><td colspan="3" style="text-align: center; color: #e74c3c;">Failed to load users from database.</td></tr>`;
+      }
+    }
+
+    // Google Books Auto-Detect with title + author combination
+    window.autoDetectBookDetails = async function() {
+      const titleInput = document.getElementById('bookTitle');
+      const authorInput = document.getElementById('bookAuthor');
+      const genreInput = document.getElementById('bookGenre');
+
+      const title = titleInput.value.trim();
+      const author = authorInput.value.trim();
+
+      if (!title) {
         alert("Please enter a book title first!");
         return;
       }
 
-      try {
-        // Try specific title search first, fallback to general search
-        let response = await fetch(`https://www.googleapis.com/books/v1/volumes?q=intitle:${encodeURIComponent(rawTitle)}`);
-        let data = await response.json();
+      let query = `intitle:${encodeURIComponent(title)}`;
+      if (author) {
+        query += `+inauthor:${encodeURIComponent(author)}`;
+      }
 
-        if (!data.items || data.items.length === 0) {
-          response = await fetch(`https://www.googleapis.com/books/v1/volumes?q=${encodeURIComponent(rawTitle)}`);
-          data = await response.json();
-        }
+      try {
+        const response = await fetch(`https://www.googleapis.com/books/v1/volumes?q=${query}`);
+        const data = await response.json();
 
         if (data.items && data.items.length > 0) {
-          const info = data.items[0].volumeInfo;
-
-          if (info.authors && info.authors.length > 0) {
-            document.getElementById('bookAuthor').value = info.authors.join(', ');
-          } else {
-            document.getElementById('bookAuthor').value = 'Mary Pope Osborne';
+          const bookInfo = data.items[0].volumeInfo;
+          
+          if (!authorInput.value && bookInfo.authors) {
+            authorInput.value = bookInfo.authors[0];
           }
 
-          if (info.categories && info.categories.length > 0) {
-            document.getElementById('bookGenre').value = info.categories.join(', ');
-          } else {
-            document.getElementById('bookGenre').value = 'Children Fiction';
+          if (genreInput) {
+            genreInput.value = bookInfo.categories ? bookInfo.categories[0] : "General";
           }
 
-          alert(`Found details for "${info.title}"!`);
+          alert("Successfully auto-detected book details!");
         } else {
           alert("No match found automatically. You can enter details manually!");
         }
       } catch (err) {
-        console.error("Error fetching book data:", err);
-        alert("Failed to connect to Google Books API.");
+        console.error("Error fetching from Google Books API:", err);
+        alert("Error connecting to Google Books API.");
       }
-    });
+    };
 
-    // Save Book to Firestore
-    document.getElementById('addBookForm').addEventListener('submit', async (e) => {
-      e.preventDefault();
+    // Save Book to Firestore Catalog
+    window.saveBookToCatalog = async function() {
+      const title = document.getElementById('bookTitle').value.trim();
+      const author = document.getElementById('bookAuthor').value.trim();
+      const genre = document.getElementById('bookGenre').value.trim();
 
-      const title = document.getElementById('bookTitle').value;
-      const author = document.getElementById('bookAuthor').value || 'Unknown Author';
-      const genre = document.getElementById('bookGenre').value || 'Uncategorized';
+      if (!title || !author) {
+        alert("Please provide both title and author!");
+        return;
+      }
 
       try {
         await addDoc(collection(db, "books"), {
           title: title,
           author: author,
-          genre: genre,
-          createdAt: new Date()
+          genre: genre || "General",
+          createdAt: new Date().toISOString()
         });
 
-        alert("Book successfully added to BookBase catalog!");
-        document.getElementById('addBookForm').reset();
-        modal.style.display = 'none';
+        alert("Book successfully added to catalog!");
+        closeModal();
+        document.getElementById('bookTitle').value = '';
+        document.getElementById('bookAuthor').value = '';
+        document.getElementById('bookGenre').value = '';
       } catch (err) {
-        console.error("Error saving book:", err);
+        console.error("Error adding book to Firestore:", err);
         alert("Failed to save book to database.");
       }
-    });
+    };
+
+    // Initial Load
+    loadUsers();
   </script>
 </body>
 </html>
