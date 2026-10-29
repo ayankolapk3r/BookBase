@@ -12,176 +12,271 @@
 
     body {
       background-color: #f4f7f6;
+      margin: 0;
+      padding: 0;
       display: flex;
       flex-direction: column;
-      justify-content: center;
       align-items: center;
       min-height: 100vh;
-      margin: 0;
-      padding: 20px;
     }
 
-    .header-container {
+    .navbar {
+      width: 100%;
+      background-color: #ffffff;
+      padding: 15px 30px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+      margin-bottom: 40px;
+    }
+
+    .brand {
+      font-size: 22px;
+      font-weight: bold;
+      color: #3498db;
+    }
+
+    .nav-btn {
+      background-color: #3498db;
+      color: white;
+      border: none;
+      padding: 8px 16px;
+      border-radius: 6px;
+      cursor: pointer;
+      font-weight: 600;
+      text-decoration: none;
+      font-size: 14px;
+    }
+
+    .nav-btn:hover {
+      background-color: #2980b9;
+    }
+
+    .container {
+      max-width: 1000px;
+      width: 100%;
+      padding: 0 20px;
       text-align: center;
       margin-bottom: 40px;
     }
 
-    .header-container h1 {
+    h1 {
       color: #2c3e50;
-      font-size: 32px;
       margin-bottom: 10px;
+      font-size: 28px;
     }
 
-    .header-container p {
+    p.subtitle {
       color: #7f8c8d;
       font-size: 16px;
-      margin: 0;
+      margin-bottom: 40px;
     }
 
-    .plans-container {
-      display: flex;
-      gap: 24px;
-      max-width: 1050px;
-      width: 100%;
-      justify-content: center;
-      flex-wrap: wrap;
+    .pricing-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 25px;
     }
 
-    .card {
-      background-color: #ffffff;
+    .pricing-card {
+      background: white;
       border-radius: 12px;
-      box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08);
-      width: 310px;
-      padding: 32px 24px;
-      text-align: center;
+      box-shadow: 0 6px 20px rgba(0,0,0,0.08);
+      padding: 30px;
       display: flex;
       flex-direction: column;
       justify-content: space-between;
-      transition: transform 0.2s, box-shadow 0.2s;
+      transition: transform 0.2s, border-color 0.2s;
+      border: 2px solid transparent;
     }
 
-    .card:hover {
+    .pricing-card:hover {
       transform: translateY(-5px);
-      box-shadow: 0 8px 25px rgba(0, 0, 0, 0.12);
     }
 
-    .card h2 {
+    .pricing-card.active-plan {
+      border-color: #2ecc71;
+    }
+
+    .plan-name {
+      font-size: 22px;
+      font-weight: bold;
       color: #2c3e50;
-      margin: 0 0 10px 0;
-      font-size: 24px;
+      margin-bottom: 10px;
     }
 
-    .price {
-      color: #3498db;
+    .plan-price {
       font-size: 32px;
       font-weight: bold;
-      margin-bottom: 24px;
+      color: #3498db;
+      margin-bottom: 20px;
     }
 
-    .features-list {
+    .plan-features {
       list-style: none;
       padding: 0;
       margin: 0 0 30px 0;
-      text-align: center;
-    }
-
-    .features-list li {
+      text-align: left;
       color: #555;
       font-size: 14px;
-      padding: 12px 0;
-      border-bottom: 1px solid #edf2f7;
     }
 
-    .btn {
+    .plan-features li {
+      padding: 8px 0;
+      border-bottom: 1px solid #f1f1f1;
+    }
+
+    .select-btn {
       width: 100%;
-      padding: 12px;
       background-color: #3498db;
-      border: none;
-      border-radius: 6px;
       color: white;
+      border: none;
+      padding: 12px;
+      border-radius: 6px;
       font-size: 16px;
       font-weight: bold;
       cursor: pointer;
       transition: background-color 0.2s;
     }
 
-    .btn:hover {
+    .select-btn:hover {
       background-color: #2980b9;
+    }
+
+    .pricing-card.active-plan .select-btn {
+      background-color: #2ecc71;
+      cursor: default;
     }
   </style>
 </head>
 <body>
 
-  <div class="header-container">
+  <nav class="navbar">
+    <div class="brand">BookBase</div>
+    <a href="dashboard.html" class="nav-btn">← Back to Dashboard</a>
+  </nav>
+
+  <div class="container">
     <h1>Select a Membership Tier</h1>
-    <p>Choose the plan that fits how many books you want to check out.</p>
+    <p class="subtitle">Choose the plan that fits how many books you want to check out at once.</p>
+
+    <div class="pricing-grid">
+      <!-- Basic Tier -->
+      <div class="pricing-card" id="card-Basic">
+        <div>
+          <div class="plan-name">Basic</div>
+          <div class="plan-price">Free</div>
+          <ul class="plan-features">
+            <li>✓ Standard 14-day checkout period</li>
+            <li>✓ Hold up to <strong>5 books</strong> max</li>
+            <li>✓ Standard community support</li>
+          </ul>
+        </div>
+        <button class="select-btn" onclick="updateMembership('Basic')">Select Basic</button>
+      </div>
+
+      <!-- Standard Tier -->
+      <div class="pricing-card" id="card-Standard">
+        <div>
+          <div class="plan-name">Standard</div>
+          <div class="plan-price">$5 / mo</div>
+          <ul class="plan-features">
+            <li>✓ Standard 14-day checkout period</li>
+            <li>✓ Hold up to <strong>10 books</strong> max</li>
+            <li>✓ Reserve upcoming books</li>
+          </ul>
+        </div>
+        <button class="select-btn" onclick="updateMembership('Standard')">Select Standard</button>
+      </div>
+
+      <!-- Premium Tier -->
+      <div class="pricing-card" id="card-Premium">
+        <div>
+          <div class="plan-name">Premium</div>
+          <div class="plan-price">$10 / mo</div>
+          <ul class="plan-features">
+            <li>✓ Extended 21-day due date</li>
+            <li>✓ Hold up to <strong>20 books</strong> max</li>
+            <li>✓ Priority reservations & support</li>
+          </ul>
+        </div>
+        <button class="select-btn" onclick="updateMembership('Premium')">Select Premium</button>
+      </div>
+    </div>
   </div>
 
-  <div class="plans-container">
-    
-    <!-- Basic / Free Tier -->
-    <div class="card">
-      <div>
-        <h2>Basic</h2>
-        <div class="price">Free</div>
-        <ul class="features-list">
-          <li>$2 per book checked out</li>
-          <li>Hold up to 5 books max</li>
-          <li>Standard support</li>
-        </ul>
-      </div>
-      <button class="btn" onclick="selectPlan('Basic')">Select Basic</button>
-    </div>
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+    import { getFirestore, doc, updateDoc, getDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
-    <!-- Standard Tier -->
-    <div class="card">
-      <div>
-        <h2>Standard</h2>
-        <div class="price">$5 / mo</div>
-        <ul class="features-list">
-          <li>Check out up to 10 books with $0 fee per book</li>
-          <li>14-day checkout period</li>
-          <li>Reserve upcoming books</li>
-        </ul>
-      </div>
-      <button class="btn" onclick="selectPlan('Standard')">Select Standard</button>
-    </div>
+    const firebaseConfig = {
+      apiKey: "AIzaSyDavvy7VnUeTKArqXXCbhBDMBvmDR9Y4po",
+      authDomain: "library-e309e.firebaseapp.com",
+      projectId: "library-e309e",
+      storageBucket: "library-e309e.appspot.com",
+      messagingSenderId: "680233256165",
+      appId: "1:680233256165:web:7b4b3a4c530238ee0a800c",
+      measurementId: "G-6KWRRT7Y91"
+    };
 
-    <!-- Premium Tier -->
-    <div class="card">
-      <div>
-        <h2>Premium</h2>
-        <div class="price">$10 / mo</div>
-        <ul class="features-list">
-          <li>Unlimited book checkouts with $0 fee per book</li>
-          <li>Extended 21-day due date</li>
-          <li>Priority reservations</li>
-        </ul>
-      </div>
-      <button class="btn" onclick="selectPlan('Premium')">Select Premium</button>
-    </div>
+    const app = initializeApp(firebaseConfig);
+    const db = getFirestore(app);
 
-  </div>
-
-  <script>
-    function selectPlan(planName) {
-      localStorage.setItem('selectedMembership', planName);
-
-      // Update current user's membership and update list in storage
-      const currentUser = JSON.parse(localStorage.getItem('currentUser'));
-      let users = JSON.parse(localStorage.getItem('libraryUsers')) || [];
-
-      if (currentUser) {
-        currentUser.membership = planName;
-        localStorage.setItem('currentUser', JSON.stringify(currentUser));
-
-        users = users.map(u => u.email === currentUser.email ? currentUser : u);
-        localStorage.setItem('libraryUsers', JSON.stringify(users));
-      }
-
-      window.location.href = 'dashboard.html';
+    const currentUser = JSON.parse(localStorage.getItem('currentUser'));
+    if (!currentUser) {
+      window.location.href = 'index.html';
     }
-  </script>
 
+    // Highlight current active plan on load
+    async function initPage() {
+      try {
+        const userRef = doc(db, "users", currentUser.email);
+        const userSnap = await getDoc(userRef);
+        if (userSnap.exists()) {
+          const plan = userSnap.data().membership || 'Basic';
+          highlightActivePlan(plan);
+        }
+      } catch (err) {
+        console.error("Error fetching membership:", err);
+        highlightActivePlan(currentUser.membership || 'Basic');
+      }
+    }
+
+    function highlightActivePlan(planName) {
+      document.querySelectorAll('.pricing-card').forEach(card => {
+        card.classList.remove('active-plan');
+      });
+      const activeCard = document.getElementById(`card-${planName}`);
+      if (activeCard) {
+        activeCard.classList.add('active-plan');
+        const btn = activeCard.querySelector('.select-btn');
+        btn.innerText = "Current Plan";
+      }
+    }
+
+    window.updateMembership = async function(newPlan) {
+      if (currentUser.membership === newPlan) return;
+
+      try {
+        // Update in Firestore
+        const userRef = doc(db, "users", currentUser.email);
+        await updateDoc(userRef, { membership: newPlan });
+
+        // Update local session storage
+        currentUser.membership = newPlan;
+        localStorage.setItem('currentUser', JSON.stringify(currentUser));
+        localStorage.setItem('selectedMembership', newPlan);
+
+        alert(`Successfully upgraded to the ${newPlan} Tier!`);
+        window.location.href = 'dashboard.html';
+      } catch (err) {
+        console.error("Error updating membership:", err);
+        alert("Failed to update membership tier. Please try again.");
+      }
+    }
+
+    initPage();
+  </script>
 </body>
 </html>

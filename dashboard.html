@@ -408,14 +408,14 @@
     <div class="stats-grid">
       <div class="stat-card plan">
         <div class="stat-title">Current Plan</div>
-        <div class="stat-value">Basic Tier</div>
+        <div class="stat-value" id="planTitleValue">Basic Tier</div>
         <div class="stat-subtext" id="planSubtext">0 / 5 Books Active</div>
       </div>
 
       <div class="stat-card">
         <div class="stat-title">Books Checked Out</div>
         <div class="stat-value" id="checkoutCountValue">0 Books</div>
-        <div class="stat-subtext">Standard 14-day limit</div>
+        <div class="stat-subtext" id="limitSubtext">Standard 14-day limit</div>
       </div>
 
       <div class="stat-card due">
@@ -492,7 +492,7 @@
 
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-    import { getFirestore, collection, getDocs, doc, deleteDoc, updateDoc, addDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+    import { getFirestore, collection, getDocs, doc, deleteDoc, updateDoc, addDoc, getDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
     const firebaseConfig = {
       apiKey: "AIzaSyDavvy7VnUeTKArqXXCbhBDMBvmDR9Y4po",
@@ -510,16 +510,50 @@
     let allBooks = [];
     let selectedGenre = "All";
     let currentActiveBook = null;
+    let userMembership = 'Basic';
+    let maxLimit = 5;
 
-    // Secure the dashboard: redirect to login if no user session exists in localStorage
-    const currentUser = JSON.parse(localStorage.getItem('currentUser'));
+    // Secure the dashboard session
+    let currentUser = JSON.parse(localStorage.getItem('currentUser'));
     if (!currentUser) {
       window.location.href = 'index.html';
     }
 
     async function loadData() {
+      await fetchUserMembership();
       await loadBooks();
       await loadCheckouts();
+    }
+
+    async function fetchUserMembership() {
+      try {
+        const userRef = doc(db, "users", currentUser.email);
+        const userSnap = await getDoc(userRef);
+        if (userSnap.exists()) {
+          const userData = userSnap.data();
+          userMembership = userData.membership || 'Basic';
+          
+          // CRITICAL FIX: Update localStorage instantly so it stays in sync with Firestore!
+          currentUser.membership = userMembership;
+          localStorage.setItem('currentUser', JSON.stringify(currentUser));
+        } else {
+          userMembership = currentUser.membership || 'Basic';
+        }
+      } catch (err) {
+        console.error("Error fetching user membership:", err);
+        userMembership = currentUser.membership || 'Basic';
+      }
+
+      // Configure limits based on active tier
+      if (userMembership === 'Standard') {
+        maxLimit = 10;
+      } else if (userMembership === 'Premium') {
+        maxLimit = 9999; // Unlimited
+      } else {
+        maxLimit = 5; // Basic
+      }
+
+      document.getElementById('planTitleValue').innerText = `${userMembership} Tier`;
     }
 
     async function loadBooks() {
@@ -546,7 +580,6 @@
         let checkouts = [];
         querySnapshot.forEach((docSnap) => {
           const data = docSnap.data();
-          // Filter checkouts to ONLY show items belonging to the current logged-in user email
           if (currentUser && data.userEmail === currentUser.email) {
             checkouts.push({ id: docSnap.id, ...data });
           }
@@ -554,7 +587,13 @@
 
         const activeCount = checkouts.length;
         countValue.innerText = `${activeCount} Book${activeCount === 1 ? '' : 's'}`;
-        planSubtext.innerText = `${activeCount} / 5 Books Active`;
+        
+        // Dynamically update subtitle based on tier
+        if (userMembership === 'Premium') {
+          planSubtext.innerText = `${activeCount} / Unlimited Books Active`;
+        } else {
+          planSubtext.innerText = `${activeCount} / ${maxLimit} Books Active`;
+        }
 
         if (activeCount === 0) {
           listContainer.innerHTML = `<div style="color: #888; font-size: 14px;">No books currently checked out. Click a book in the catalog to borrow!</div>`;
@@ -645,7 +684,7 @@
     window.borrowCurrentBook = async function() {
       if (!currentActiveBook || !currentUser) return;
 
-      // Enforce 5-book active limit specifically for THIS user
+      // Enforce limit check (bypass entirely if user is on Premium Tier)
       try {
         const querySnapshot = await getDocs(collection(db, "checkouts"));
         let userActiveCount = 0;
@@ -655,8 +694,8 @@
           }
         });
 
-        if (userActiveCount >= 5) {
-          alert("You've reached your Basic Tier limit of 5 books! Return a book or upgrade your membership to borrow more.");
+        if (userMembership !== 'Premium' && userActiveCount >= maxLimit) {
+          alert(`You've reached your ${userMembership} Tier limit of ${maxLimit} books! Upgrade your membership to borrow more.`);
           return;
         }
       } catch (err) {
@@ -673,9 +712,9 @@
       try {
         const checkoutDate = new Date();
         const dueDate = new Date();
-        dueDate.setDate(checkoutDate.getDate() + 14);
+        const daysToAdd = userMembership === 'Premium' ? 21 : 14;
+        dueDate.setDate(checkoutDate.getDate() + daysToAdd);
 
-        // Save checkout tied directly to the user's email address
         await addDoc(collection(db, "checkouts"), {
           bookId: currentActiveBook.id,
           bookTitle: currentActiveBook.title,
@@ -690,7 +729,7 @@
         const bookRef = doc(db, "books", currentActiveBook.id);
         await updateDoc(bookRef, { stock: newStock });
 
-        alert(`Successfully checked out "${currentActiveBook.title}"! Due in 14 days.`);
+        alert(`Successfully checked out "${currentActiveBook.title}"! Due in ${daysToAdd} days.`);
         closeDetailModal();
         loadData();
       } catch (err) {
