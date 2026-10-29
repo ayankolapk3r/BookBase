@@ -1,0 +1,459 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Library System - Welcome</title>
+  <style>
+    * {
+      box-sizing: border-box;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    }
+
+    body {
+      background-color: #f4f7f6;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+      margin: 0;
+    }
+
+    .container {
+      background-color: #ffffff;
+      padding: 30px 40px;
+      border-radius: 12px;
+      box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+      width: 100%;
+      max-width: 420px;
+    }
+
+    h2 {
+      text-align: center;
+      color: #2c3e50;
+      margin-bottom: 24px;
+    }
+
+    .form-group {
+      margin-bottom: 18px;
+    }
+
+    .remember-group {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 18px;
+      font-size: 14px;
+      color: #34495e;
+      cursor: pointer;
+    }
+
+    .remember-group input[type="checkbox"] {
+      cursor: pointer;
+    }
+
+    label {
+      display: block;
+      margin-bottom: 6px;
+      color: #34495e;
+      font-weight: 600;
+      font-size: 14px;
+    }
+
+    input[type="text"],
+    input[type="email"],
+    input[type="password"] {
+      width: 100%;
+      padding: 10px 14px;
+      border: 1px solid #ccc;
+      border-radius: 6px;
+      font-size: 14px;
+      outline: none;
+      transition: border-color 0.2s;
+    }
+
+    input:focus {
+      border-color: #3498db;
+    }
+
+    .btn {
+      width: 100%;
+      padding: 12px;
+      background-color: #3498db;
+      border: none;
+      border-radius: 6px;
+      color: white;
+      font-size: 16px;
+      font-weight: bold;
+      cursor: pointer;
+      transition: background-color 0.2s;
+    }
+
+    .btn:hover {
+      background-color: #2980b9;
+    }
+
+    .btn-secondary {
+      background-color: #2ecc71;
+    }
+
+    .btn-secondary:hover {
+      background-color: #27ae60;
+    }
+
+    .toggle-text {
+      text-align: center;
+      margin-top: 16px;
+      font-size: 14px;
+      color: #7f8c8d;
+    }
+
+    .toggle-text a {
+      color: #3498db;
+      text-decoration: none;
+      font-weight: bold;
+    }
+
+    .toggle-text a:hover {
+      text-decoration: underline;
+    }
+
+    .status-msg {
+      font-size: 13px;
+      margin-bottom: 12px;
+      text-align: center;
+      display: none;
+    }
+
+    .status-msg.error {
+      color: #e74c3c;
+    }
+
+    .status-msg.success {
+      color: #27ae60;
+    }
+
+    .verification-step {
+      display: none;
+      background-color: #f8fafc;
+      border: 1px solid #e2e8f0;
+      padding: 16px;
+      border-radius: 8px;
+      margin-bottom: 18px;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="container">
+    
+    <!-- 1. SIGN IN FORM -->
+    <form id="login-form">
+      <h2>Library Sign In</h2>
+      <div id="login-error" class="status-msg error"></div>
+
+      <div class="form-group">
+        <label for="login-email">Email</label>
+        <input type="email" id="login-email" required placeholder="you@example.com" autocomplete="email">
+      </div>
+      <div class="form-group">
+        <label for="login-password">Password</label>
+        <input type="password" id="login-password" required placeholder="Enter your password" autocomplete="current-password">
+      </div>
+      
+      <label class="remember-group">
+        <input type="checkbox" id="remember-me">
+        Remember Me
+      </label>
+
+      <button type="submit" class="btn">Sign In</button>
+      
+      <p class="toggle-text">
+        <a href="#" onclick="showForm('forgot-form')">Forgot password? Click here</a>
+      </p>
+      <p class="toggle-text">
+        Don't have an account? <a href="#" onclick="showForm('register-form')">Create one here</a>
+      </p>
+    </form>
+
+    <!-- 2. CREATE ACCOUNT FORM -->
+    <form id="register-form" style="display: none;">
+      <h2>Create Account</h2>
+      <div id="reg-status" class="status-msg"></div>
+
+      <div id="reg-step-1">
+        <div class="form-group">
+          <label for="reg-name">Full Name</label>
+          <input type="text" id="reg-name" required placeholder="John Doe" autocomplete="name">
+        </div>
+        <div class="form-group">
+          <label for="reg-email">Email</label>
+          <input type="email" id="reg-email" required placeholder="you@example.com" autocomplete="email">
+        </div>
+        <div class="form-group">
+          <label for="reg-password">Password</label>
+          <input type="password" id="reg-password" required placeholder="Create a password" autocomplete="new-password">
+        </div>
+        <button type="button" class="btn" onclick="sendRegisterCode()">Send Verification Code</button>
+      </div>
+
+      <div id="reg-step-2" class="verification-step">
+        <div class="form-group">
+          <label for="reg-code">Enter 4-Digit Code Sent to Email</label>
+          <input type="text" id="reg-code" placeholder="1234" maxlength="4">
+        </div>
+        <button type="button" class="btn btn-secondary" onclick="verifyAndRegister()">Verify Code & Complete Sign Up</button>
+      </div>
+
+      <p class="toggle-text">
+        Already have an account? <a href="#" onclick="showForm('login-form')">Sign In here</a>
+      </p>
+    </form>
+
+    <!-- 3. FORGOT PASSWORD FORM -->
+    <form id="forgot-form" style="display: none;">
+      <h2>Reset Password</h2>
+      <div id="forgot-status" class="status-msg"></div>
+
+      <div id="forgot-step-1">
+        <div class="form-group">
+          <label for="forgot-email">Account Email</label>
+          <input type="email" id="forgot-email" required placeholder="you@example.com">
+        </div>
+        <button type="button" class="btn" onclick="sendForgotCode()">Send Recovery Code</button>
+      </div>
+
+      <div id="forgot-step-2" class="verification-step">
+        <div class="form-group">
+          <label for="forgot-code">Enter 4-Digit Recovery Code</label>
+          <input type="text" id="forgot-code" placeholder="1234" maxlength="4">
+        </div>
+        <div class="form-group">
+          <label for="forgot-new-password">New Password</label>
+          <input type="password" id="forgot-new-password" placeholder="Enter new password">
+        </div>
+        <button type="button" class="btn btn-secondary" onclick="verifyAndResetPassword()">Reset & Update Password</button>
+      </div>
+
+      <p class="toggle-text">
+        Remembered your password? <a href="#" onclick="showForm('login-form')">Back to Sign In</a>
+      </p>
+    </form>
+
+  </div>
+
+  <!-- EmailJS SDK -->
+  <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
+  
+  <!-- Firebase SDKs -->
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+    import { getFirestore, doc, setDoc, getDoc, updateDoc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyDavvy7VnUeTKarqXXCbhBDMBvmDR9Y4po",
+      authDomain: "library-e309e.firebaseapp.com",
+      projectId: "library-e309e",
+      storageBucket: "library-e309e.firebasestorage.app",
+      messagingSenderId: "680233256165",
+      appId: "1:680233256165:web:7b4b3a4c530238ee0a800c",
+      measurementId: "G-6KWRRT7Y91"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const db = getFirestore(app);
+
+    emailjs.init({ publicKey: "RjqnohrEAj_8wiubb" });
+
+    let generatedRegisterCode = null;
+    let generatedForgotCode = null;
+
+    window.addEventListener('DOMContentLoaded', () => {
+      const savedUser = JSON.parse(localStorage.getItem('rememberedUser'));
+      if (savedUser) {
+        document.getElementById('login-email').value = savedUser.email;
+        document.getElementById('login-password').value = savedUser.password;
+        document.getElementById('remember-me').checked = true;
+      }
+    });
+
+    window.showForm = function(formId) {
+      document.getElementById('login-form').style.display = 'none';
+      document.getElementById('register-form').style.display = 'none';
+      document.getElementById('forgot-form').style.display = 'none';
+      document.getElementById(formId).style.display = 'block';
+    }
+
+    function displayMsg(elementId, text, isError) {
+      const el = document.getElementById(elementId);
+      el.textContent = text;
+      el.className = 'status-msg ' + (isError ? 'error' : 'success');
+      el.style.display = 'block';
+    }
+
+    // --- REGISTRATION FLOW ---
+    window.sendRegisterCode = async function() {
+      const name = document.getElementById('reg-name').value;
+      const email = document.getElementById('reg-email').value.toLowerCase().trim();
+      const password = document.getElementById('reg-password').value;
+
+      if (!name || !email || !password) {
+        displayMsg('reg-status', 'Please fill in all registration fields.', true);
+        return;
+      }
+
+      // Check if user exists in Firebase
+      try {
+        const userDoc = await getDoc(doc(db, "users", email));
+        if (userDoc.exists()) {
+          displayMsg('reg-status', 'An account with this email already exists!', true);
+          return;
+        }
+      } catch (err) {
+        console.error("Firebase read error:", err);
+      }
+
+      generatedRegisterCode = String(Math.floor(1000 + Math.random() * 9000));
+      displayMsg('reg-status', 'Sending verification code to ' + email + '...', false);
+
+      emailjs.send('service_7kyk9eg', 'template_vjpnyb6', {
+        to_email: email,
+        to_name: name,
+        passcode: generatedRegisterCode
+      }).then(function() {
+        displayMsg('reg-status', 'Code sent! Check your inbox and enter it below.', false);
+        document.getElementById('reg-step-2').style.display = 'block';
+      }, function(error) {
+        console.error('EmailJS Error:', error);
+        displayMsg('reg-status', 'Failed to send email code.', true);
+      });
+    }
+
+    window.verifyAndRegister = async function() {
+      const enteredCode = document.getElementById('reg-code').value.trim();
+      if (enteredCode !== generatedRegisterCode) {
+        displayMsg('reg-status', 'Incorrect verification code.', true);
+        return;
+      }
+
+      const name = document.getElementById('reg-name').value;
+      const email = document.getElementById('reg-email').value.toLowerCase().trim();
+      const password = document.getElementById('reg-password').value;
+
+      const newUser = {
+        name: name,
+        email: email,
+        password: password,
+        membership: 'Basic',
+        createdAt: new Date().toISOString()
+      };
+
+      try {
+        // Save user straight to Firebase Cloud!
+        await setDoc(doc(db, "users", email), newUser);
+        localStorage.setItem('currentUser', JSON.stringify(newUser));
+        alert('Account created successfully!');
+        window.location.href = 'membership.html';
+      } catch (err) {
+        console.error("Firebase write error:", err);
+        displayMsg('reg-status', 'Error saving account to cloud database.', true);
+      }
+    }
+
+    // --- FORGOT PASSWORD FLOW ---
+    window.sendForgotCode = async function() {
+      const email = document.getElementById('forgot-email').value.toLowerCase().trim();
+      
+      try {
+        const userRef = doc(db, "users", email);
+        const userSnap = await getDoc(userRef);
+
+        if (!userSnap.exists()) {
+          displayMsg('forgot-status', 'No account found with that email address.', true);
+          return;
+        }
+
+        const userData = userSnap.data();
+        generatedForgotCode = String(Math.floor(1000 + Math.random() * 9000));
+
+        displayMsg('forgot-status', 'Sending recovery code to ' + email + '...', false);
+
+        emailjs.send('service_7kyk9eg', 'template_vjpnyb6', {
+          to_email: email,
+          to_name: userData.name,
+          passcode: generatedForgotCode
+        }).then(function() {
+          displayMsg('forgot-status', 'Recovery code sent! Enter it below with your new password.', false);
+          document.getElementById('forgot-step-2').style.display = 'block';
+        }, function(error) {
+          console.error('EmailJS Error:', error);
+          displayMsg('forgot-status', 'Failed to send recovery email.', true);
+        });
+      } catch (err) {
+        console.error("Firebase check error:", err);
+      }
+    }
+
+    window.verifyAndResetPassword = async function() {
+      const enteredCode = document.getElementById('forgot-code').value.trim();
+      const newPassword = document.getElementById('forgot-new-password').value;
+      const email = document.getElementById('forgot-email').value.toLowerCase().trim();
+
+      if (enteredCode !== generatedForgotCode) {
+        displayMsg('forgot-status', 'Incorrect code. Please check your inbox.', true);
+        return;
+      }
+
+      if (!newPassword) {
+        displayMsg('forgot-status', 'Please enter a new password.', true);
+        return;
+      }
+
+      try {
+        // Update password in Firebase Cloud
+        await updateDoc(doc(db, "users", email), { password: newPassword });
+        alert('Password updated successfully! Please sign in with your new password.');
+        showForm('login-form');
+      } catch (err) {
+        console.error("Firebase update error:", err);
+        displayMsg('forgot-status', 'Error updating password in cloud.', true);
+      }
+    }
+
+    // --- SIGN IN FLOW ---
+    document.getElementById('login-form').addEventListener('submit', async function(event) {
+      event.preventDefault();
+
+      const email = document.getElementById('login-email').value.toLowerCase().trim();
+      const password = document.getElementById('login-password').value;
+      const rememberMe = document.getElementById('remember-me').checked;
+
+      try {
+        const userRef = doc(db, "users", email);
+        const userSnap = await getDoc(userRef);
+
+        if (userSnap.exists() && userSnap.data().password === password) {
+          const userData = userSnap.data();
+
+          if (rememberMe) {
+            localStorage.setItem('rememberedUser', JSON.stringify({ email, password }));
+          } else {
+            localStorage.removeItem('rememberedUser');
+          }
+
+          localStorage.setItem('currentUser', JSON.stringify(userData));
+          localStorage.setItem('selectedMembership', userData.membership || 'Basic');
+
+          window.location.href = 'dashboard.html';
+        } else {
+          displayMsg('login-error', 'Invalid email or password.', true);
+        }
+      } catch (err) {
+        console.error("Firebase sign in error:", err);
+        displayMsg('login-error', 'Error connecting to database server.', true);
+      }
+    });
+  </script>
+
+</body>
+</html>

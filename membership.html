@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Library System - Choose Membership</title>
+  <style>
+    * {
+      box-sizing: border-box;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    }
+
+    body {
+      background-color: #f4f7f6;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+      margin: 0;
+      padding: 20px;
+    }
+
+    .header-container {
+      text-align: center;
+      margin-bottom: 40px;
+    }
+
+    .header-container h1 {
+      color: #2c3e50;
+      font-size: 32px;
+      margin-bottom: 10px;
+    }
+
+    .header-container p {
+      color: #7f8c8d;
+      font-size: 16px;
+      margin: 0;
+    }
+
+    .plans-container {
+      display: flex;
+      gap: 24px;
+      max-width: 1050px;
+      width: 100%;
+      justify-content: center;
+      flex-wrap: wrap;
+    }
+
+    .card {
+      background-color: #ffffff;
+      border-radius: 12px;
+      box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08);
+      width: 310px;
+      padding: 32px 24px;
+      text-align: center;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      transition: transform 0.2s, box-shadow 0.2s;
+    }
+
+    .card:hover {
+      transform: translateY(-5px);
+      box-shadow: 0 8px 25px rgba(0, 0, 0, 0.12);
+    }
+
+    .card h2 {
+      color: #2c3e50;
+      margin: 0 0 10px 0;
+      font-size: 24px;
+    }
+
+    .price {
+      color: #3498db;
+      font-size: 32px;
+      font-weight: bold;
+      margin-bottom: 24px;
+    }
+
+    .features-list {
+      list-style: none;
+      padding: 0;
+      margin: 0 0 30px 0;
+      text-align: center;
+    }
+
+    .features-list li {
+      color: #555;
+      font-size: 14px;
+      padding: 12px 0;
+      border-bottom: 1px solid #edf2f7;
+    }
+
+    .btn {
+      width: 100%;
+      padding: 12px;
+      background-color: #3498db;
+      border: none;
+      border-radius: 6px;
+      color: white;
+      font-size: 16px;
+      font-weight: bold;
+      cursor: pointer;
+      transition: background-color 0.2s;
+    }
+
+    .btn:hover {
+      background-color: #2980b9;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="header-container">
+    <h1>Select a Membership Tier</h1>
+    <p>Choose the plan that fits how many books you want to check out.</p>
+  </div>
+
+  <div class="plans-container">
+    
+    <!-- Basic / Free Tier -->
+    <div class="card">
+      <div>
+        <h2>Basic</h2>
+        <div class="price">Free</div>
+        <ul class="features-list">
+          <li>$2 per book checked out</li>
+          <li>Hold up to 5 books max</li>
+          <li>Standard support</li>
+        </ul>
+      </div>
+      <button class="btn" onclick="selectPlan('Basic')">Select Basic</button>
+    </div>
+
+    <!-- Standard Tier -->
+    <div class="card">
+      <div>
+        <h2>Standard</h2>
+        <div class="price">$5 / mo</div>
+        <ul class="features-list">
+          <li>Check out up to 10 books with $0 fee per book</li>
+          <li>14-day checkout period</li>
+          <li>Reserve upcoming books</li>
+        </ul>
+      </div>
+      <button class="btn" onclick="selectPlan('Standard')">Select Standard</button>
+    </div>
+
+    <!-- Premium Tier -->
+    <div class="card">
+      <div>
+        <h2>Premium</h2>
+        <div class="price">$10 / mo</div>
+        <ul class="features-list">
+          <li>Unlimited book checkouts with $0 fee per book</li>
+          <li>Extended 21-day due date</li>
+          <li>Priority reservations</li>
+        </ul>
+      </div>
+      <button class="btn" onclick="selectPlan('Premium')">Select Premium</button>
+    </div>
+
+  </div>
+
+  <script>
+    function selectPlan(planName) {
+      localStorage.setItem('selectedMembership', planName);
+
+      // Update current user's membership and update list in storage
+      const currentUser = JSON.parse(localStorage.getItem('currentUser'));
+      let users = JSON.parse(localStorage.getItem('libraryUsers')) || [];
+
+      if (currentUser) {
+        currentUser.membership = planName;
+        localStorage.setItem('currentUser', JSON.stringify(currentUser));
+
+        users = users.map(u => u.email === currentUser.email ? currentUser : u);
+        localStorage.setItem('libraryUsers', JSON.stringify(users));
+      }
+
+      window.location.href = 'dashboard.html';
+    }
+  </script>
+
+</body>
+</html>
